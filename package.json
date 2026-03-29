@@ -1,0 +1,50 @@
+{
+  "name": "@figliolia/semver",
+  "version": "1.0.0",
+  "description": "A CLI to automatically manage versioning of your npm packages",
+  "keywords": [
+    "cli",
+    "developer tool",
+    "semver"
+  ],
+  "homepage": "https://github.com/alexfigliolia/semver#readme",
+  "license": "MIT",
+  "author": "Alex Figliolia",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexfigliolia/semver.git"
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "lint": "oxlint --type-aware --type-check --report-unused-disable-directives --fix && oxfmt"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@figliolia/child-process": "^1.0.4",
+    "@types/node": "^25.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.57.1",
+    "@typescript-eslint/parser": "^8.57.1",
+    "chalk": "4",
+    "eslint": "^10.0.3",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "eslint-plugin-unused-imports": "^4.4.1",
+    "oxfmt": "^0.42.0",
+    "oxlint": "^1.42.0",
+    "oxlint-tsgolint": "^0.18.1",
+    "tsdown": "^0.21.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}
