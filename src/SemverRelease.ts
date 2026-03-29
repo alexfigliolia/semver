@@ -1,28 +1,34 @@
 import { execSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { cwd, exit } from "node:process";
 import { parseArgs } from "node:util";
 import chalk from "chalk";
+import { Logger } from "./Logger";
 import type { ReleaseConfiguration, SemverString } from "./types";
 
 export class SemverRelease {
-  private static readonly ROOT = this.findRootSync();
+  public static readonly ROOT = this.findRootSync();
   private static readonly RELEASE_TYPES = ["patch", "minor", "major"] as const;
   private static readonly PACKAGE_FILE_PATH = join(this.ROOT, "package.json");
-  constructor(public readonly configuration: ReleaseConfiguration) {}
+  constructor(public readonly configuration: ReleaseConfiguration = {}) {}
 
   public async run() {
     const releaseType = await this.getReleaseType();
+    Logger.info(`Creating a new ${Logger.BLUE(releaseType)} release`);
     const nextVersion = await this.getNextVersion(releaseType);
     if (!nextVersion) {
       return;
     }
+    Logger.info(
+      `The version for this release will be ${Logger.BLUE(nextVersion)}`,
+    );
+    Logger.info("Running post processors");
     await this.configuration?.onNewVersion?.(nextVersion);
     await this.writePackageVersion(nextVersion);
     await this.configuration?.onComplete?.(nextVersion);
-    console.log("Fin! 🚀");
+    Logger.info("Fin! 🚀");
   }
 
   private async getNextVersion(
@@ -33,7 +39,7 @@ export class SemverRelease {
     const [major, minor, patch] = version.split(".");
     if (!major || !minor || !patch) {
       return this.logAndExit(
-        `The existing package version ${chalk.red.bold(version)} is not following semver. Fix this`,
+        `The existing package version ${Logger.RED(version)} is not following semver. Fix this`,
       );
     }
     let nextVersion: string = version;
@@ -50,7 +56,7 @@ export class SemverRelease {
     }
     if (nextVersion === packageFile.version) {
       return this.logAndExit(
-        `Bumping ${chalk.red.bold(packageFile.version)} by a ${chalk.green.bold(releaseType)} failed. Please inspect the version and try again`,
+        `Bumping ${Logger.RED(packageFile.version)} by a ${Logger.BLUE(releaseType)} failed. Please inspect the version and try again`,
       );
     }
     return nextVersion as SemverString;
@@ -81,7 +87,7 @@ export class SemverRelease {
     const release = type as (typeof SemverRelease.RELEASE_TYPES)[number];
     if (!SemverRelease.RELEASE_TYPES.includes(release)) {
       await this.logAndExit(
-        `The release type ${chalk.red.bold(type)} is invalid. Please specify one of ${chalk.green.bold(Array.from(SemverRelease.RELEASE_TYPES).join(" | "))}`,
+        `The release type ${Logger.RED(type)} is invalid. Please specify one of ${chalk.green.bold(Array.from(SemverRelease.RELEASE_TYPES).join(" | "))}`,
       );
       exit(0);
     }
@@ -89,8 +95,8 @@ export class SemverRelease {
   }
 
   private async logAndExit(msg: string) {
-    await this.configuration.onError?.(msg);
-    console.log(msg);
+    await this.configuration?.onError?.(msg);
+    Logger.error(msg);
     exit(0);
   }
 
@@ -116,11 +122,14 @@ export class SemverRelease {
 
   private async getPackageFile() {
     try {
-      const packageFile = await import(SemverRelease.PACKAGE_FILE_PATH);
-      return packageFile;
+      const packageFile = (
+        await readFile(SemverRelease.PACKAGE_FILE_PATH)
+      ).toString();
+      const json = JSON.parse(packageFile);
+      return json;
     } catch {
       await this.logAndExit(
-        `I failed to locate your ${chalk.blue.bold("package.json")} file`,
+        `I failed to locate your ${Logger.BLUE("package.json")} file`,
       );
       exit(0);
     }
