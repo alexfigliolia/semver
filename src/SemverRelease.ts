@@ -10,12 +10,13 @@ import type { ReleaseConfiguration, SemverString } from "./types";
 
 export class SemverRelease {
   public static readonly ROOT = this.findRootSync();
-  private static readonly RELEASE_TYPES = ["patch", "minor", "major"] as const;
+  public static readonly RELEASE_TYPES = ["patch", "minor", "major"] as const;
   private static readonly PACKAGE_FILE_PATH = join(this.ROOT, "package.json");
   constructor(public readonly configuration: ReleaseConfiguration = {}) {}
 
   public async run() {
-    const releaseType = await this.getReleaseType();
+    const releaseType =
+      this.configuration.type ?? (await this.getReleaseType());
     Logger.info(`Creating a new ${Logger.BLUE(releaseType)} release`);
     const nextVersion = await this.getNextVersion(releaseType);
     if (!nextVersion) {
