@@ -1,6 +1,6 @@
 {
   "name": "@figliolia/semver",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A CLI to automatically manage versioning of your npm packages",
   "keywords": [
     "cli",
