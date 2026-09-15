@@ -1,6 +1,6 @@
 import type { SemverRelease } from "./SemverRelease";
 
-export type SemverString = `${number}.${number}${number}`;
+export type SemverString = `${number}.${number}.${number}`;
 
 export type VersionCalback = (newVersion: SemverString) => void | Promise<void>;
 
